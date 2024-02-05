@@ -56,8 +56,6 @@ Modify the Makefile as follows:
 - ARCH=RISCV
 - `CXXFLAGS=.... -I{SST_ELEMENTS_HOME}/include/`
 
-Modified Makefile - 
-
 #### Running the simulation
 
 **On SST**:
@@ -80,6 +78,7 @@ build/X86/gem5.opt <gem5_config.py>
 ### Required Files
 
 **sst_helloworld.py**
+
 **gem5_helloworld.py**
 
 **hello world binary** - `riscv-hello` - already available at gem5-resources
