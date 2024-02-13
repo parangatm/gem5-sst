@@ -1,36 +1,53 @@
-# gem5 hello word using stdlib
-# Ref: https://www.gem5.org/documentation/gem5-stdlib/hello-world-tutorial
-
-# Resolved warnings with following issues:
-# https://www.mail-archive.com/gem5-dev@gem5.org/msg42815.html
-# https://www.mail-archive.com/gem5-users@gem5.org/msg21671.html
-    
-from gem5.components.boards.simple_board import SimpleBoard
-from gem5.components.cachehierarchies.classic.no_cache import NoCache
-from gem5.components.memory.single_channel import SingleChannelDDR3_1600
-from gem5.components.processors.simple_processor import SimpleProcessor
-from gem5.components.processors.cpu_types import CPUTypes
+import m5
+import os
+from m5.objects import *
 from gem5.resources.resource import obtain_resource
-from gem5.simulate.simulator import Simulator
-from gem5.isas import ISA
 
-# Obtain the components.
-cache_hierarchy = NoCache()
-memory = SingleChannelDDR3_1600("8GiB")
-processor = SimpleProcessor(cpu_type=CPUTypes.ATOMIC, num_cores=1, isa=ISA.RISCV)
+system = System()
 
-#Add them to the board.
-board = SimpleBoard(
-    clk_freq="3GHz",
-    processor=processor,
-    memory=memory,
-    cache_hierarchy=cache_hierarchy,
-)
-  
-# Set the workload.
-binary = obtain_resource("riscv-hello")
-board.set_se_binary_workload(binary)  
+system.clk_domain = SrcClockDomain()
+system.clk_domain.clock = "1GHz"
+system.clk_domain.voltage_domain = VoltageDomain()
 
-# Setup the Simulator and run the simulation.
-simulator = Simulator(board=board)
-simulator.run()
+system.cpu = RiscvTimingSimpleCPU()
+system.mem_mode = "timing"
+system.mem_ranges = [AddrRange("512MB")]
+
+system.membus = NoncoherentXBar(
+        frontend_latency=0,
+        forward_latency=0,
+        response_latency=0,
+        header_latency=0,
+        width=64,
+    )
+
+system.cpu.icache_port = system.membus.cpu_side_ports
+system.cpu.dcache_port = system.membus.cpu_side_ports
+system.cpu.mmu.connectWalkerPorts(system.membus.cpu_side_ports, system.membus.cpu_side_ports)
+system.cpu.createThreads()
+system.cpu.createInterruptController()
+
+system.mem_ctrl = MemCtrl()
+system.mem_ctrl.dram = DDR3_1600_8x8()
+system.mem_ctrl.dram.range = system.mem_ranges[0]
+system.mem_ctrl.port = system.membus.mem_side_ports
+
+system.memory_outgoing_bridge = OutgoingRequestBridge()
+system.memory_outgoing_bridge.port = system.membus.mem_side_ports
+
+system.system_outgoing_bridge = OutgoingRequestBridge()
+system.system_port = system.system_outgoing_bridge.port
+
+binary = "/mnt/c/Users/paran/Code/gem5/gem5/tests/test-progs/hello/bin/riscv/linux/hello"
+
+system.workload = SEWorkload.init_compatible(binary)
+process = Process()
+process.cmd = [binary]
+system.cpu.workload = process
+
+root = Root(full_system=False, system=system)
+# m5.instantiate()
+
+# print("Beginning simulation!")
+# exit_event = m5.simulate()
+# print("Exiting @ tick %i because %s" % (m5.curTick(), exit_event.getCause()))
