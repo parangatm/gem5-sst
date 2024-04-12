@@ -13,11 +13,13 @@ addr_range_end = sst.UnitAlgebra(memory_size_sst).getRoundedValue()
 # params : frequency, cmd, debug_flags
 # ports: systemPort, cachePort
 gem5_node = sst.Component("gem5_node", "gem5.gem5Component")
+
+#Add full path for gem5_helloworld.py
 cpu_params = {
     "frequency": cpu_clock_rate,
-    "cmd": "../../work/tutorial/stdlib_helloworld.py",
+    "cmd": "gem5_helloworld.py",
     "debug_flags": ""
-}
+} 
 gem5_node.addParams(cpu_params)
 
 # systemPort on gem5Component
