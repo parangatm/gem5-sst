@@ -38,7 +38,7 @@ system.memory_outgoing_bridge.port = system.membus.mem_side_ports
 system.system_outgoing_bridge = OutgoingRequestBridge()
 system.system_port = system.system_outgoing_bridge.port
 
-binary = "/mnt/c/Users/paran/Code/gem5/gem5/tests/test-progs/hello/bin/riscv/linux/hello"
+binary = "gem5/tests/test-progs/hello/bin/riscv/linux/hello" #Add full path to the test binary
 
 system.workload = SEWorkload.init_compatible(binary)
 process = Process()
